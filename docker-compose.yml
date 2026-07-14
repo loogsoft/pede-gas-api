@@ -1,0 +1,45 @@
+services:
+  api:
+    build:
+      context: .
+      target: development
+    container_name: api-pedegas
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: '3000'
+      DB_HOST: postgres
+      DB_PORT: '5432'
+      DB_USERNAME: andersonmendes
+      DB_PASSWORD: root
+      DB_DATABASE: pedegas
+      DB_SCHEMA: public
+      DB_SSL: 'false'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: npm run start:dev
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: pedegas-postgres
+    ports:
+      - '5434:5432'
+    environment:
+      POSTGRES_USER: andersonmendes
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: pedegas
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U andersonmendes -d pedegas']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
